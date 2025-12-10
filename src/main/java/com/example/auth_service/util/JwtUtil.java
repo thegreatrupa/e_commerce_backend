@@ -39,8 +39,7 @@ public class JwtUtil {
     }
 
     public String generateRefreshToken(Long id) {
-//        long expiration = refreshExpiration;
-        long expiration = 120000;
+        long expiration = refreshExpiration;
         return Jwts.builder()
                 .claim("id", id)
                 .setIssuedAt(new Date())
