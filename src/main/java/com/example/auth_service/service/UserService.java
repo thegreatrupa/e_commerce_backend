@@ -36,7 +36,7 @@ public class UserService {
         }
         userRepository.save(user);
         String accessToken = jwtUtil.generateAccessToken(user.getId(), user.getName(), user.getEmail());
-        String refreshToken = jwtUtil.generateRefreshToken();
+        String refreshToken = jwtUtil.generateRefreshToken(user.getId());
 
 
         RefreshToken refreshTokenEntity = new RefreshToken();

@@ -38,9 +38,11 @@ public class JwtUtil {
                 .compact();
     }
 
-    public String generateRefreshToken() {
-        long expiration = refreshExpiration;
+    public String generateRefreshToken(Long id) {
+//        long expiration = refreshExpiration;
+        long expiration = 120000;
         return Jwts.builder()
+                .claim("id", id)
                 .setIssuedAt(new Date())
                 .setExpiration(new Date(System.currentTimeMillis() + expiration))
                 .signWith(SignatureAlgorithm.HS256, secretKey)
@@ -48,11 +50,11 @@ public class JwtUtil {
     }
 
     public Long getUserIdFromToken(String token){
-        return Long.parseLong(Jwts.parser()
+        Claims claims = Jwts.parser()
                 .setSigningKey(secretKey)
                 .parseClaimsJws(token)
-                .getBody()
-                .getId());
+                .getBody();
+        return claims.get("id", Long.class);
     }
 
     public boolean validateToken(String token){
