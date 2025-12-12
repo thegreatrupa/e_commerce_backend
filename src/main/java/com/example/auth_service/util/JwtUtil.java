@@ -1,18 +1,20 @@
 package com.example.auth_service.util;
 
 import io.jsonwebtoken.*;
+import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
 import io.jsonwebtoken.security.SignatureException;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
-import javax.crypto.SecretKey;
+import java.security.Key;
+import java.util.Arrays;
 import java.util.Date;
-import java.util.UUID;
 
 @Component
 public class JwtUtil {
-    private SecretKey secretKey;
+    @Value("${jwt.secret}")
+    private String secretKey;
 
     @Value("${jwt.access.expiration}")
     private long accessExpiration;
@@ -20,9 +22,9 @@ public class JwtUtil {
     @Value("${jwt.refresh.expiration}")
     private long refreshExpiration;
 
-    public JwtUtil() {
-        // Generate a secure random key for HS256
-        this.secretKey = Keys.secretKeyFor(io.jsonwebtoken.SignatureAlgorithm.HS256);
+    private Key getSigningKey() {
+        byte[] keyBytes = Decoders.BASE64.decode(secretKey);
+        return Keys.hmacShaKeyFor(keyBytes);
     }
 
     public String generateAccessToken(Long id, String name, String emailId){
@@ -34,7 +36,7 @@ public class JwtUtil {
                 .claim("emailId", emailId)
                 .setIssuedAt(new Date())
                 .setExpiration(new Date(System.currentTimeMillis() + expiration))
-                .signWith(SignatureAlgorithm.HS256, secretKey)
+                .signWith(SignatureAlgorithm.HS256, getSigningKey())
                 .compact();
     }
 
@@ -44,13 +46,13 @@ public class JwtUtil {
                 .claim("id", id)
                 .setIssuedAt(new Date())
                 .setExpiration(new Date(System.currentTimeMillis() + expiration))
-                .signWith(SignatureAlgorithm.HS256, secretKey)
+                .signWith(SignatureAlgorithm.HS256, getSigningKey())
                 .compact();
     }
 
     public Long getUserIdFromToken(String token){
         Claims claims = Jwts.parser()
-                .setSigningKey(secretKey)
+                .setSigningKey(getSigningKey())
                 .parseClaimsJws(token)
                 .getBody();
         return claims.get("id", Long.class);
@@ -58,7 +60,7 @@ public class JwtUtil {
 
     public boolean validateToken(String token){
         try{
-            Jwts.parser().setSigningKey(secretKey).parseClaimsJws(token);
+            Jwts.parser().setSigningKey(getSigningKey()).parseClaimsJws(token);
             return true;
         }
         catch (ExpiredJwtException | UnsupportedJwtException | MalformedJwtException | SignatureException | IllegalArgumentException e) {
