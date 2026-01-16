@@ -1,5 +1,6 @@
 package com.example.auth_service.service;
 
+import com.example.auth_service.dto.AuthResponse;
 import com.example.auth_service.entity.RefreshToken;
 import com.example.auth_service.entity.Role;
 import com.example.auth_service.entity.User;
@@ -8,6 +9,9 @@ import com.example.auth_service.repository.UserRepository;
 import com.example.auth_service.util.JwtUtil;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+
+import java.time.Duration;
+import java.time.Instant;
 
 @Service
 public class UserService {
@@ -23,7 +27,7 @@ public class UserService {
         this.refreshTokenRepository = refreshTokenRepository;
     }
 
-    public String[] register(String username, String password, String name, String email, String role){
+    public AuthResponse register(String username, String password, String name, String email, String role){
         User user = new User();
         user.setUsername(username);
         user.setPassword(passwordEncoder.encode(password));
@@ -41,8 +45,10 @@ public class UserService {
 
         RefreshToken refreshTokenEntity = new RefreshToken();
         refreshTokenEntity.setToken(refreshToken);
+        refreshTokenEntity.setUser(user);
+        refreshTokenEntity.setExpiryDate(Instant.now().plus(Duration.ofDays(30)));
         refreshTokenRepository.save(refreshTokenEntity);
 
-        return new String[]{accessToken, refreshToken};
+        return new AuthResponse(accessToken, refreshToken);
     }
 }

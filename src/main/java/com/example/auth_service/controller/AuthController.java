@@ -24,15 +24,15 @@ public class AuthController {
     }
 
     @PostMapping("/register")
-    public ResponseEntity<?> register(@RequestBody RegisterRequest request){
-        String[] token = userService.register(request.getUsername(), request.getPassword(), request.getName(), request.getEmail(), request.getRole());
-        return ResponseEntity.ok(new AuthResponse(token[0], token[1]));
+    public ResponseEntity<AuthResponse> register(@RequestBody RegisterRequest request){
+        AuthResponse tokens = userService.register(request.getUsername(), request.getPassword(), request.getName(), request.getEmail(), request.getRole());
+        return ResponseEntity.ok(tokens);
     }
 
     @PostMapping("/login")
     public ResponseEntity<AuthResponse> login(@RequestBody AuthRequest request){
-        String[] token = authService.login(request.getUsername(), request.getPassword());
-        return ResponseEntity.ok(new AuthResponse(token[0], token[1]));
+        AuthResponse tokens = authService.login(request.getUsername(), request.getPassword());
+        return ResponseEntity.ok(tokens);
     }
 
     @PostMapping("/refresh")
