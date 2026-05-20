@@ -49,7 +49,7 @@ public class AuthService {
     }
 
     @Transactional
-    public String refreshAccessToken(String refreshTokenStr){
+    public AuthResponse refreshAccessToken(String refreshTokenStr){
         RefreshToken refreshToken = refreshTokenRepository.findByToken(refreshTokenStr)
                 .orElseThrow(() -> new ResourceNotFoundException("Refresh token not found"));
 
@@ -57,9 +57,18 @@ public class AuthService {
             refreshTokenRepository.deleteByToken(refreshTokenStr);
             throw new InvalidCredentialsException("Refresh token is invalid or expired");
         }
-
         User user = refreshToken.getUser();
-        return jwtUtil.generateAccessToken(user.getId(), user.getName(), user.getEmail());
+        refreshTokenRepository.deleteByToken(refreshTokenStr);
+        String newRefreshToken = jwtUtil.generateRefreshToken(user.getId());
+
+        RefreshToken newToken = new RefreshToken();
+        newToken.setToken(newRefreshToken);
+        newToken.setUser(user);
+        newToken.setExpiryDate(Instant.now().plus(Duration.ofDays(30)));
+
+        refreshTokenRepository.save(newToken);
+        String accessToken =  jwtUtil.generateAccessToken(user.getId(), user.getName(), user.getEmail());
+        return new AuthResponse(accessToken, newRefreshToken);
     }
 
     public void logout(String refreshTokenStr) {

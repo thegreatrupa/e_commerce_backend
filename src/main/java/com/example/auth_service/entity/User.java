@@ -1,6 +1,5 @@
 package com.example.auth_service.entity;
 
-import ch.qos.logback.core.joran.spi.NoAutoStart;
 import jakarta.persistence.*;
 
 
