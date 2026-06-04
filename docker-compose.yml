@@ -1,0 +1,12 @@
+services:
+  order-service:
+    image: thegreatrupa/auth-service:latest
+    container_name: auth-service
+
+    env_file:
+      - .env
+
+    ports:
+      - "8081:8081"
+
+    restart: unless-stopped
