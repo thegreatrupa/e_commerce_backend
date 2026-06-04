@@ -1,5 +1,5 @@
 services:
-  order-service:
+  auth-service:
     image: thegreatrupa/auth-service:latest
     container_name: auth-service
 
